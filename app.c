@@ -86,7 +86,10 @@ int main()
 
     for (u32 i = 0; i < buf.capacity; i++)
     {
-        FloatBuffer_Set(&buf, 2.0 * (position - 0.5));
+        if (position < 0.5)
+            FloatBuffer_Set(&buf, 1.0);
+        else
+            FloatBuffer_Set(&buf, -1.0);
         position += delta;
         if (position >= 1.0)
         {
