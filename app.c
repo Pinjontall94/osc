@@ -19,7 +19,7 @@ void sawtooth_wave(floatbuffer_t *buf, double freq, float amp);
 
 int main(void)
 {
-    double test_frequency = 110;
+    double test_frequency = 55;
     float volume = 0.05f;
     floatbuffer_t buf = floatbuffer_new(TRACK_LENGTH_SECONDS);
     FILE *file = fopen(OUTPUT_FILE, "wb");
@@ -44,18 +44,18 @@ void pulse_wave(floatbuffer_t *buf, double freq, float amp, float duty_cycle)
     float const delta = freq / SAMPLE_RATE;
     float const MAX_AMP = 1.0;
     float const MIN_AMP = -1.0;
-    float position = 0.00;
+    float phase = 0.00;  // i.e. where in the period of the wave we are
 
     for (uint32_t i = 0; i < buf->capacity; i++)
     {
-        if (position < duty_cycle)
+        if (phase < duty_cycle)
             floatbuffer_set(buf, MAX_AMP * amp);
         else
             floatbuffer_set(buf, MIN_AMP * amp);
-        position += delta;
-        if (position >= 1.0)
+        phase += delta;
+        if (phase >= 1.0)
         {
-            position -= 1.0;
+            phase -= 1.0;
         }
     }
 }
@@ -64,17 +64,17 @@ void sawtooth_wave(floatbuffer_t *buf, double freq, float amp)
 {
     assert(freq > 0 && freq < NYQUIST_SHANNON && amp > 0 && amp < 1);
     float const delta = freq / SAMPLE_RATE;
-    float position = 0.00;
+    float phase = 0.00;
     float val = 0.00;
 
     for (uint32_t i = 0; i < buf->capacity; i++)
     {
-        val = (position - 0.5) * 2 * amp;
+        val = (phase - 0.5) * 2 * amp;
         floatbuffer_set(buf, val);
-        position += delta;
-        if (position >= 1.0)
+        phase += delta;
+        if (phase >= 1.0)
         {
-            position -= 1.0;
+            phase -= 1.0;
         }
     }
 }
