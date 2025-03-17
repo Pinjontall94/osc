@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int main()
+int saw()
 {
     float freq = 440;
     float sample_rate = 44100; // standard CD sample rate in Hz
@@ -20,7 +20,7 @@ int main()
     }
 
     fwrite(buffer, sizeof(float), 88200, file);
-    
+
     fclose(file);
     return 0;
 }

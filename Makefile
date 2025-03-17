@@ -1,22 +1,29 @@
 CC=gcc
-CFLAGS=-Wall -Werror -std=c99 -I. -I./include
-LDLIBS=-lasan 
-LDFLAGS=-L/usr/local/include -fsanitize=address
+CFLAGS=-Wall -Werror -Wextra -pedantic -std=c99
+LDLIBS=-lasan
+LDFLAGS=-fsanitize=address
+SRCS=$(wildcard *.c)
+OBJS=$(patsubst %.c,%.o,$(SRCS))
 
+all: out.wav
 
-.PHONY: all
-all: app
+out.wav: out.raw
+	ffmpeg -f f32le -ar 44.1k -ac 1 -c:a pcm_f32le -i $^ $@
 
-app: app.o
+out.raw: app
+	./app
+
+app: $(OBJS)
 	$(CC) $(LDLIBS) $(LDFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-.PHONY: clean
 clean:
-	rm app *.o
+	rm *.o *.raw
 
-.PHONY: run
-run:
-	./app
+extraclean:
+	rm *.o *.raw app out.wav
+
+view:
+	audacity out.raw &
