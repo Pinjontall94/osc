@@ -1,41 +1,80 @@
-#include <stddef.h>
-#include <stdio.h>
+#include "floatbuffer.h"
+#include <assert.h>
 #include <errno.h>
+#include <float.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <float.h>
-#include <stdint.h>
-#include "./floatbuffer.h"
+
+/* Constants */
+static uint32_t const SAMPLE_RATE = 44100; // standard CD sample rate in Hz
+static uint32_t const NYQUIST_SHANNON = SAMPLE_RATE / 2;
+static char const OUTPUT_FILE[] = "out.raw";
+static uint32_t const TRACK_LENGTH_SECONDS = SAMPLE_RATE * 2;
+
+void pulse_wave(floatbuffer_t *buf, double freq, float amp, float duty_cycle);
+void sawtooth_wave(floatbuffer_t *buf, double freq, float amp);
 
 int main(void)
 {
-    float freq = 110;
-    float sample_rate = 44100; // standard CD sample rate in Hz
-    float delta = freq / sample_rate;
-    float position = 0.00;
-    floatbuffer_t buf = floatbuffer_new(88200);
-    FILE *file = fopen("out.raw", "wb");
+    double test_frequency = 110;
+    float volume = 0.05f;
+    floatbuffer_t buf = floatbuffer_new(TRACK_LENGTH_SECONDS);
+    FILE *file = fopen(OUTPUT_FILE, "wb");
     if (file == NULL)
     {
-        fprintf(stderr, "Couldn't open out.raw: %s\n", strerror(errno));
+        fprintf(stderr, "Couldn't open file: %s\n", strerror(errno));
         return 1;
     }
 
-    for (uint32_t i = 0; i < buf.capacity; i++)
+    pulse_wave(&buf, test_frequency, volume, 0.2);
+    // sawtooth_wave(&buf, test_frequency, volume);
+
+    fwrite(buf.data, sizeof(float), TRACK_LENGTH_SECONDS, file);
+    floatbuffer_del(buf);
+    fclose(file);
+    return 0;
+}
+
+void pulse_wave(floatbuffer_t *buf, double freq, float amp, float duty_cycle)
+{
+    assert(freq > 0 && freq < NYQUIST_SHANNON && amp > 0 && amp < 1 && duty_cycle > 0 && duty_cycle < 1);
+    float const delta = freq / SAMPLE_RATE;
+    float const MAX_AMP = 1.0;
+    float const MIN_AMP = -1.0;
+    float position = 0.00;
+
+    for (uint32_t i = 0; i < buf->capacity; i++)
     {
-        if (position < 0.5)
-            floatbuffer_set(&buf, 1.0);
+        if (position < duty_cycle)
+            floatbuffer_set(buf, MAX_AMP * amp);
         else
-            floatbuffer_set(&buf, -1.0);
+            floatbuffer_set(buf, MIN_AMP * amp);
         position += delta;
         if (position >= 1.0)
         {
             position -= 1.0;
         }
     }
+}
 
-    fwrite(buf.data, sizeof(float), 88200, file);
-    floatbuffer_del(buf);
-    fclose(file);
-    return 0;
+void sawtooth_wave(floatbuffer_t *buf, double freq, float amp)
+{
+    assert(freq > 0 && freq < NYQUIST_SHANNON && amp > 0 && amp < 1);
+    float const delta = freq / SAMPLE_RATE;
+    float position = 0.00;
+    float val = 0.00;
+
+    for (uint32_t i = 0; i < buf->capacity; i++)
+    {
+        val = (position - 0.5) * 2 * amp;
+        floatbuffer_set(buf, val);
+        position += delta;
+        if (position >= 1.0)
+        {
+            position -= 1.0;
+        }
+    }
 }

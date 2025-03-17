@@ -7,7 +7,7 @@
 #include <string.h>
 #include <error.h>
 
-typedef struct FloatBuffer
+typedef struct
 {
     float *data;  // pointer to first element
     uint32_t length;   // number of elements in buf

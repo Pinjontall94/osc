@@ -26,4 +26,4 @@ extraclean:
 	rm *.o *.raw app out.wav
 
 view:
-	audacity out.raw &
+	audacity out.wav &
