@@ -5,13 +5,7 @@ LDFLAGS=-fsanitize=address
 SRCS=$(wildcard *.c)
 OBJS=$(patsubst %.c,%.o,$(SRCS))
 
-all: out.wav
-
-out.wav: out.raw
-	ffmpeg -f f32le -ar 44.1k -ac 1 -c:a pcm_f32le -i $^ $@
-
-out.raw: app
-	./app
+all: app
 
 app: $(OBJS)
 	$(CC) $(LDLIBS) $(LDFLAGS) -o $@ $^
@@ -25,5 +19,11 @@ clean:
 extraclean:
 	rm *.o *.raw app out.wav
 
-view:
-	audacity out.wav &
+view: out.wav
+	audacity $^ &
+
+out.wav: out.raw
+	ffmpeg -f f32le -ar 44.1k -ac 1 -c:a pcm_f32le -i $^ $@
+
+out.raw: app
+	./app
