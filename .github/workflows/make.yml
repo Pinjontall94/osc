@@ -1,0 +1,11 @@
+name: GitHub Actions C Build With Make
+run-name: ${{ github.actor }} is building a C project in GitHub Actions with Make 🛠️
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@main
+      - name: build application
+        run: make build
