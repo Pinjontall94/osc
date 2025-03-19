@@ -5,10 +5,13 @@ LDFLAGS=-fsanitize=address
 SRCS=$(wildcard *.c)
 OBJS=$(patsubst %.c,%.o,$(SRCS))
 
-all: app
+all: app app.exe
 
 app: $(OBJS)
 	$(CC) $(LDLIBS) $(LDFLAGS) -o $@ $^
+
+app.exe: $(OBJS)
+	x86_64-w64-mingw32-gcc $(LDLIBS) $(LDFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
