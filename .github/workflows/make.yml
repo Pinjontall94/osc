@@ -15,7 +15,7 @@ jobs:
       - name: compile app
         id: builder
         run: |
-          make \
+          make && \
           echo "elf=app" >> $GITHUB_OUTPUT
       - name: upload artifacts
         uses: actions/upload-artifact@v4
